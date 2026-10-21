@@ -3,546 +3,546 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Classical vs Elliptic Curve Cryptanalysis — Advanced Statistics</title>
+  <title>HW3 — Toy ECC vs Caesar: Encryption & Cryptanalysis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-dark: #120914;
-      --bg-header: #1f0d22;
-      --card-bg: #1c0e20;
-      --card-inner: #26132b;
-      --pink-neon: #ff2a85;
-      --pink-soft: #fb7185;
-      --pink-blush: #f472b6;
-      --pink-light: #fbcfe8;
-      --pink-glow: rgba(255, 42, 133, 0.25);
-      --border-pink: rgba(244, 63, 94, 0.22);
-      --text-main: #fdf2f8;
-      --text-muted: #d8b4e2;
-      --code-bg: #0b040c;
+      --bg-base: #0f0a14;
+      --bg-surface: #181020;
+      --bg-surface-elevated: #22152d;
+      --border-subtle: rgba(255, 42, 133, 0.18);
+      --border-strong: rgba(255, 42, 133, 0.45);
+      --accent-pink: #ff2a85;
+      --accent-blush: #f472b6;
+      --accent-soft: #fbcfe8;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --code-bg: #09050d;
+      --success: #34d399;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
       line-height: 1.65;
+      padding-bottom: 80px;
     }
 
-    /* NAVBAR */
-    .navbar {
-      background: var(--bg-dark);
-      border-bottom: 1px solid var(--border-pink);
-      padding: 16px 36px;
+    /* TOP HEADER */
+    .top-bar {
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(15, 10, 20, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 14px 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(12px);
     }
 
-    .brand {
+    .top-bar .title-group {
       display: flex;
       align-items: center;
       gap: 12px;
-      text-decoration: none;
     }
 
-    .brand-logo {
-      background: linear-gradient(135deg, #ff2a85 0%, #ec4899 100%);
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 1.15rem;
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
+    .badge-sigma {
+      background: linear-gradient(135deg, #ff2a85, #ec4899);
+      width: 32px;
+      height: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 16px var(--pink-glow);
-    }
-
-    .brand-title {
-      color: #ffffff;
+      border-radius: 8px;
       font-weight: 700;
-      font-size: 1.15rem;
+      font-size: 1rem;
+      color: #fff;
     }
 
-    .brand-title span {
-      color: var(--pink-blush);
+    .top-bar h1 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .top-bar span {
+      color: var(--accent-blush);
+      font-size: 0.82rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* CONTAINER */
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 36px 20px 0 20px;
     }
 
     /* HERO */
     .hero {
-      background: linear-gradient(180deg, var(--bg-header) 0%, var(--bg-dark) 100%);
-      padding: 55px 32px 65px 32px;
-      border-bottom: 1px solid var(--border-pink);
+      margin-bottom: 40px;
     }
 
-    .hero-container {
-      max-width: 960px;
-      margin: 0 auto;
-    }
-
-    .homework-tag {
-      display: inline-flex;
-      align-items: center;
-      background: rgba(255, 42, 133, 0.12);
-      border: 1px solid var(--pink-neon);
-      color: #ffa6cf;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
+    .hero-meta {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: var(--accent-pink);
       text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 9999px;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .hero h2 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.25;
       margin-bottom: 14px;
     }
 
-    .hero h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      line-height: 1.2;
-      color: #ffffff;
-      margin-bottom: 12px;
+    .hero h2 span {
+      color: var(--accent-pink);
     }
 
-    .hero h1 span {
-      background: linear-gradient(135deg, #ff65a3 0%, #ff2a85 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-subtitle {
-      color: var(--pink-blush);
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 16px;
-    }
-
-    .hero-desc {
-      color: var(--text-muted);
-      font-size: 0.98rem;
+    .hero p {
+      color: var(--text-secondary);
+      font-size: 1.02rem;
       max-width: 780px;
+      line-height: 1.6;
     }
 
-    /* MAIN CONTAINER */
-    .content-area {
-      max-width: 960px;
-      margin: -20px auto 80px auto;
-      padding: 0 20px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 18px;
-      border: 1px solid var(--border-pink);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      padding: 36px;
+    /* SECTION CARDS */
+    .section-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 32px;
       margin-bottom: 32px;
     }
 
-    h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: #ffffff;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border-pink);
+    .section-card h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 14px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--pink-light);
-      margin: 20px 0 10px 0;
+    .section-card h3::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--accent-pink);
+      border-radius: 2px;
     }
 
-    p, li {
-      color: var(--text-muted);
+    .section-card p, .section-card li {
+      color: var(--text-secondary);
       font-size: 0.95rem;
       margin-bottom: 12px;
     }
 
-    /* LAB INTERACTIVE CONTROLS */
-    .lab-box {
-      background: var(--card-inner);
-      border: 1px solid var(--border-pink);
-      border-radius: 12px;
+    /* WORKBENCH LAB PANELS */
+    .lab-panel {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
       padding: 20px;
       margin: 20px 0;
     }
 
-    .input-row {
-      display: flex;
-      flex-wrap: wrap;
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
-      margin-bottom: 14px;
-      align-items: center;
+      margin-bottom: 16px;
     }
 
     label {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--pink-light);
+      display: block;
+      font-size: 0.8rem;
+      font-family: 'Fira Code', monospace;
+      color: var(--accent-soft);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    input[type="text"], input[type="number"], select, textarea {
+    input, select, textarea {
+      width: 100%;
       background: var(--code-bg);
-      border: 1px solid var(--border-pink);
-      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
       color: #fff;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.9rem;
-      padding: 8px 12px;
+      padding: 9px 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.88rem;
       outline: none;
+      transition: border-color 0.2s;
     }
 
-    input[type="text"]:focus, select:focus, textarea:focus {
-      border-color: var(--pink-neon);
-      box-shadow: 0 0 10px var(--pink-glow);
+    input:focus, textarea:focus {
+      border-color: var(--accent-pink);
     }
 
     textarea {
-      width: 100%;
       height: 80px;
       resize: vertical;
     }
 
-    button {
-      background: linear-gradient(135deg, #ff2a85 0%, #ec4899 100%);
-      color: white;
+    .btn-action {
+      background: linear-gradient(135deg, #ff2a85 0%, #d91b68 100%);
+      color: #ffffff;
       border: none;
-      padding: 9px 18px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      cursor: pointer;
-      box-shadow: 0 0 12px var(--pink-glow);
-      transition: all 0.2s;
-    }
-
-    button:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-    }
-
-    .terminal-out {
-      background: var(--code-bg);
-      border-left: 3px solid var(--pink-neon);
       border-radius: 6px;
-      padding: 12px 16px;
-      font-family: 'JetBrains Mono', monospace;
+      padding: 9px 16px;
+      font-weight: 600;
       font-size: 0.85rem;
-      color: var(--pink-light);
-      margin-top: 12px;
-      word-break: break-all;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
 
-    /* TABLES */
+    .btn-action:hover {
+      opacity: 0.9;
+    }
+
+    /* CODE & OUTPUT TERMINAL */
+    .terminal {
+      background: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--accent-pink);
+      border-radius: 6px;
+      padding: 14px 18px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: var(--accent-soft);
+      line-height: 1.55;
+      overflow-x: auto;
+    }
+
+    .terminal strong {
+      color: #fff;
+    }
+
+    /* COMPARISON TABLES */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 18px 0;
+      margin: 20px 0;
       font-size: 0.9rem;
-      border: 1px solid var(--border-pink);
-      border-radius: 10px;
-      overflow: hidden;
     }
 
     th, td {
-      padding: 10px 14px;
+      padding: 12px 14px;
       text-align: left;
-      border-bottom: 1px solid rgba(244, 63, 94, 0.12);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     th {
-      background: rgba(255, 42, 133, 0.14);
-      color: #ffa6cf;
-      font-weight: 700;
-    }
-
-    td {
-      background: var(--card-inner);
+      background: rgba(255, 42, 133, 0.08);
+      color: var(--accent-blush);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     td strong {
-      color: #ffffff;
+      color: #fff;
     }
 
-    .badge-pill {
-      background: rgba(244, 63, 94, 0.18);
-      color: #ff99c8;
-      border: 1px solid rgba(244, 63, 94, 0.35);
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.8rem;
+    /* MATH HIGHLIGHT */
+    .math-pill {
+      background: rgba(255, 42, 133, 0.12);
+      border: 1px solid var(--border-subtle);
+      color: var(--accent-soft);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.84rem;
     }
   </style>
 </head>
 <body>
 
-  <nav class="navbar">
-    <a href="#" class="brand">
-      <div class="brand-logo">&Sigma;</div>
-      <div class="brand-title">Applied Statistics <span>&bull; Cryptanalysis</span></div>
-    </a>
-  </nav>
-
-  <header class="hero">
-    <div class="hero-container">
-      <div class="homework-tag">Homework Assignment &bull; Part 2</div>
-      <h1>Classical vs. <span>Elliptic Curve</span> Schemes</h1>
-      <div class="hero-subtitle">Caesar Cipher Chi-Square Recovery & Bounded ECC Discrete Logarithm Attacks</div>
-      <p class="hero-desc">
-        A comparative laboratory and theoretical investigation analyzing symmetric monoalphabetic ciphers versus asymmetric group-theoretic encryption over elliptic curves.
-      </p>
+  <header class="top-bar">
+    <div class="title-group">
+      <div class="badge-sigma">&Sigma;</div>
+      <div>
+        <h1>Applied Statistics & Cryptography</h1>
+        <span>Laboratory Report // Module 03</span>
+      </div>
     </div>
   </header>
 
-  <main class="content-area">
+  <main class="container">
 
-    <!-- LAB 1: CAESAR CIPHER -->
-    <div class="card">
-      <h2>1. The Caesar Cipher Implementation</h2>
+    <!-- HERO INTRO -->
+    <section class="hero">
+      <div class="hero-meta">Homework Assignment 03</div>
+      <h2>Toy ECC vs. Caesar: <span>Encryption & Cryptanalysis</span></h2>
       <p>
-        The Caesar cipher is a symmetric monoalphabetic substitution cipher over alphabet $\mathbb{Z}_{26}$.
-        Encryption maps letter $x$ with secret key $k \in \{0, \dots, 25\}$ via $E_k(x) = (x + k) \bmod 26$.
+        An operational comparison between classical symmetric monoalphabetic ciphers and group-theoretic asymmetric encryption (EC-ElGamal), investigating statistical frequency attacks ($\chi^2$) and bounded discrete logarithm recovery.
+      </p>
+    </section>
+
+    <!-- SECTION 1: CAESAR CIPHER -->
+    <section class="section-card">
+      <h3>1. Caesar Cipher Implementation</h3>
+      <p>
+        The Caesar cipher operates on the discrete ring $\mathbb{Z}_{26}$. Plaintext letters $x \in \{0, \dots, 25\}$ are shifted with secret key $k \in \mathbb{Z}_{26}$ according to:
+      </p>
+      <p style="text-align:center;">
+        <span class="math-pill">E_k(x) = (x + k) \bmod 26</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span class="math-pill">D_k(c) = (c - k) \bmod 26</span>
       </p>
 
-      <div class="lab-box">
-        <label>Input Message:</label>
-        <textarea id="caesar-plaintext">CRYPTOGRAPHY AND STATISTICS ARE THE FOUNDATIONS OF DISTRIBUTED LEDGER SECURITY</textarea>
+      <div class="lab-panel">
+        <label>Input Message</label>
+        <textarea id="caesar-input">CRYPTOGRAPHY AND STATISTICS DEMONSTRATE THE MATHEMATICAL BOUNDS OF PRIVACY PRESERVATION</textarea>
         
-        <div class="input-row" style="margin-top: 10px;">
-          <label>Shift Key ($k$):</label>
-          <input type="number" id="caesar-key" value="7" min="0" max="25" style="width: 70px;">
-          <button onclick="runCaesarEncrypt()">Encrypt Message</button>
+        <div class="control-grid" style="margin-top: 14px;">
+          <div>
+            <label>Key Shift ($k$)</label>
+            <input type="number" id="caesar-shift" value="7" min="0" max="25">
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button class="btn-action" onclick="executeCaesar()">Encrypt & Update Ciphertext</button>
+          </div>
         </div>
 
-        <div class="terminal-out" id="caesar-output">
-          Ciphertext will appear here...
+        <div class="terminal" id="caesar-terminal">
+          Awaiting input...
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- LAB 2: STATISTICAL CRYPTANALYSIS -->
-    <div class="card">
-      <h2>2. Statistical Cryptanalysis (&chi;&sup2; Goodness-of-Fit)</h2>
+    <!-- SECTION 2: STATISTICAL CRYPTANALYSIS -->
+    <section class="section-card">
+      <h3>2. Statistical Cryptanalysis via $\chi^2$ Goodness-of-Fit</h3>
       <p>
-        Exploits language redundancy. We evaluate the Chi-Squared statistic across all candidate shifts $k \in \{0, \dots, 25\}$ against the standard English unigram frequency vector:
-        $$\chi^2(k) = \sum_{i=A}^Z \frac{(O_i(k) - L \cdot p_i)^2}{L \cdot p_i}$$
+        Because Caesar preserves relative symbol frequencies, an attacker evaluates all 26 candidate decryptions against an expected unigram frequency vector $p = (p_A, \dots, p_Z)$. The correct key minimizes the Pearson $\chi^2$ statistic:
+      </p>
+      <p style="text-align:center;">
+        <span class="math-pill">\chi^2(k) = \sum_{i \in \Sigma} \frac{\left(O_i(k) - L \cdot p_i\right)^2}{L \cdot p_i}</span>
       </p>
 
-      <div class="lab-box">
-        <label>Ciphertext to Cryptanalyze:</label>
-        <textarea id="crypto-input">JAPWAHNYHWOF HUK ZAHAPZAPJZ HYL AOL MVBUKHAPVUZ VM KPZAYPIBALK SLKNLY ZLJBYPAF</textarea>
+      <div class="lab-panel">
+        <label>Ciphertext to Analyze</label>
+        <textarea id="attack-ciphertext">JYFWAVNYHWOF HUK ZAHAPZAPJZ KLTVIZAYHAL AOL THAOLTHAPJHS IVBUKZ VM WYPCHJF WYLZLYCHAPVU</textarea>
         
-        <div class="input-row" style="margin-top: 10px;">
-          <button onclick="runChiSquareAttack()">Recover Key (&chi;&sup2; Attack)</button>
+        <div style="margin: 14px 0;">
+          <button class="btn-action" onclick="executeChiSquareAttack()">Execute $\chi^2$ Key Recovery</button>
         </div>
 
-        <div class="terminal-out" id="crypto-result">
-          Click button to run statistical key recovery...
+        <div class="terminal" id="attack-terminal">
+          Click button to run frequency evaluation across 26 candidate keys...
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- LAB 3: TOY ECC ENCRYPTION -->
-    <div class="card">
-      <h2>3. Toy secp256k1 EC-ElGamal Cryptosystem</h2>
+    <!-- SECTION 3: TOY ECC SCHEME -->
+    <section class="section-card">
+      <h3>3. Toy secp256k1 Elliptic Curve ElGamal Scheme</h3>
       <p>
-        Using the curve group from Part 1: $y^2 \equiv x^3 + 7 \pmod{17}$, base generator $G = (1, 5)$.
-        Private key $d \in [1, n-1]$, Public key $Q = d \cdot G$.
+        We reuse the small curve group $y^2 \equiv x^3 + 7 \pmod{17}$ with generator $G = (1, 5)$ from Part 1. 
+        Encryption of an encoded curve point $M$ under recipient public key $Q = d \cdot G$ with ephemeral nonce $k$ computes:
+      </p>
+      <p style="text-align:center;">
+        <span class="math-pill">C_1 = k \cdot G</span> &nbsp;&nbsp;|&nbsp;&nbsp; 
+        <span class="math-pill">C_2 = M + k \cdot Q</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+        <span class="math-pill">M = C_2 - d \cdot C_1</span>
       </p>
 
-      <div class="lab-box">
-        <div class="input-row">
-          <label>Recipient Private Key ($d$):</label>
-          <input type="number" id="ecc-priv" value="3" min="1" max="17" style="width: 70px;">
-          
-          <label>Ephemeral Nonce ($k$):</label>
-          <input type="number" id="ecc-k" value="5" min="1" max="17" style="width: 70px;">
-
-          <button onclick="runEccDemo()">Run Encryption & Decryption</button>
+      <div class="lab-panel">
+        <div class="control-grid">
+          <div>
+            <label>Private Key ($d \in [1, 16]$)</label>
+            <input type="number" id="ecc-priv" value="3" min="1" max="16">
+          </div>
+          <div>
+            <label>Ephemeral Nonce ($k \in [1, 16]$)</label>
+            <input type="number" id="ecc-nonce" value="5" min="1" max="16">
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button class="btn-action" onclick="executeEccScheme()">Run EC-ElGamal Pipeline</button>
+          </div>
         </div>
 
-        <div class="terminal-out" id="ecc-output">
-          ECC point coordinates and ciphertext pair will display here...
+        <div class="terminal" id="ecc-terminal">
+          Awaiting execution...
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- LAB 4: BOUNDED DISCRETE LOG ATTACK -->
-    <div class="card">
-      <h2>4. Bounded Private-Key Recovery Attack</h2>
+    <!-- SECTION 4: BOUNDED DISCRETE LOG ATTACK -->
+    <section class="section-card">
+      <h3>4. Bounded Private-Key Recovery Attack</h3>
       <p>
-        Because the toy scheme restricts the scalar private key to a small interval $d \in [1, B]$, an attacker can invert the Elliptic Curve Discrete Logarithm Problem (ECDLP) via iterative scalar baby-steps ($j \cdot G$).
+        In a toy implementation where $d \in [1, B]$ with small $B$, an adversary can invert the Elliptic Curve Discrete Logarithm Problem (ECDLP) through direct scalar enumeration $j \cdot G = Q$ without needing ciphertext samples.
       </p>
 
-      <div class="lab-box">
-        <div class="input-row">
-          <label>Intercepted Public Key $Q$:</label>
-          <input type="text" id="target-q" value="(10, 15)" style="width: 120px;" readonly>
-          <button onclick="runDlogAttack()">Execute Bounded Point Search</button>
+      <div class="lab-panel">
+        <div class="control-grid">
+          <div>
+            <label>Target Public Key $Q$</label>
+            <input type="text" id="target-q-display" value="(10, 15)" readonly>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button class="btn-action" onclick="executeDlogAttack()">Run Bounded Point Enumeration</button>
+          </div>
         </div>
 
-        <div class="terminal-out" id="dlog-output">
-          Brute-force iteration state will display here...
+        <div class="terminal" id="dlog-terminal">
+          Awaiting attack trigger...
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- WRITTEN COMPARATIVE REPORT -->
-    <div class="card">
-      <h2>5. Theoretical Analysis & Comparative Discussion</h2>
+    <!-- SECTION 5: THEORETICAL DISCUSSION -->
+    <section class="section-card">
+      <h3>5. Comparative Cryptanalysis & Structural Trade-Offs</h3>
       
-      <h3>A. Architectural & Group-Theoretic Comparison</h3>
       <table>
         <thead>
           <tr>
-            <th>Dimension</th>
+            <th>Characteristic</th>
             <th>Caesar Cipher</th>
             <th>Toy ECC (EC-ElGamal)</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>Paradigm</strong></td>
-            <td>Symmetric (Monoalphabetic Substitution)</td>
-            <td>Asymmetric (Public-Key / Group-Theoretic)</td>
+            <td><strong>Cryptographic Paradigm</strong></td>
+            <td>Symmetric Monoalphabetic Substitution</td>
+            <td>Asymmetric Group-Theoretic Key Agreement</td>
           </tr>
           <tr>
-            <td><strong>Mathematical Domain</strong></td>
-            <td>Additive group $(\mathbb{Z}_{26}, +)$</td>
-            <td>Abelian Group $(\mathcal{E}(\mathbb{F}_p), +)$ over $y^2 \equiv x^3 + 7 \pmod p$</td>
+            <td><strong>Algebraic Structure</strong></td>
+            <td>Additive Ring $\mathbb{Z}_{26}$</td>
+            <td>Abelian Point Group $\mathcal{E}(\mathbb{F}_{17})$ over $y^2 = x^3 + 7$</td>
           </tr>
           <tr>
-            <td><strong>Ciphertext Determinism</strong></td>
-            <td>Deterministic ($1:1$ invariant mapping)</td>
-            <td>Probabilistic ($C_1 = kG$, $C_2 = M + kQ$ varies per nonce $k$)</td>
+            <td><strong>Determinism</strong></td>
+            <td>Strictly Deterministic ($1:1$ invariant mapping)</td>
+            <td>Probabilistic (fresh nonce $k$ yields distinct ciphertexts)</td>
           </tr>
           <tr>
-            <td><strong>Key Space Size</strong></td>
+            <td><strong>Key Space Cardinality</strong></td>
             <td>$\vert{}\mathcal{K}\vert{} = 26$</td>
-            <td>Toy: $\vert{}\mathcal{K}\vert{} = n_{\text{toy}}$ ($18$); Production: $n \approx 2^{256}$</td>
+            <td>Toy: $\vert{}\mathcal{K}\vert{} = 18$ // Production: $\approx 2^{256}$</td>
           </tr>
           <tr>
-            <td><strong>Statistical Invariance</strong></td>
-            <td>Preserves letter frequency distributions</td>
-            <td>Destroys unigram/n-gram distributions via scalar mixing</td>
+            <td><strong>Information Leakage</strong></td>
+            <td>Preserves natural language letter distribution</td>
+            <td>Completely destroys unigram and n-gram correlations</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>B. Statistical Attack vs. Bounded Discrete Log Search</h3>
+      <h4 style="margin: 20px 0 10px 0; font-size: 1.05rem; color: var(--accent-blush);">Key Vulnerability Discrepancies</h4>
       <ul>
-        <li><strong>Nature of the Caesar Flaw:</strong> The Caesar cipher does not alter relative symbol frequencies. The frequency profile of the plaintext is merely translated cyclically along the alphabet array. Recovery relies purely on <em>information leakage</em> from natural language redundancy.</li>
-        <li><strong>Nature of the Toy ECC Flaw:</strong> The vulnerability is not an information leak in the ciphertext, but rather a <em>parameter constraint</em> ($B \ll 2^{256}$). The underlying group operation completely scrambles coordinates, but because $B$ is tiny, brute-force enumeration $j \cdot G$ terminates immediately.</li>
-        <li><strong>Why this Fails against Real-World secp256k1:</strong> In production ECC, $d \in [1, 2^{256}]$. The optimal known generic solver is Pollard's $\rho$ algorithm with time complexity $\mathcal{O}(\sqrt{n}) \approx 2^{128}$ operations. At a rate of $10^{12}$ operations/second on a massive computing cluster, finding $d$ would require approximately $10^{13}$ years.</li>
+        <li><strong>Language Redundancy vs. Parameter Bounds:</strong> The Caesar cipher is vulnerable because it fails Shannon's principle of confusion: character distribution is merely permuted. The statistical attack requires sufficient ciphertext length ($L$) to converge. Conversely, the toy ECC attack does not exploit ciphertext distribution; it exploits a truncated parameter space ($B \ll 2^{256}$) where discrete logarithms are computationally reachable.</li>
+        <li><strong>Scalability to Production Parameters:</strong> The Caesar cipher cannot be repaired by expanding the key space because $\mathbb{Z}_{26}$ is bounded by alphabet size. In contrast, full secp256k1 operates over a 256-bit scalar field where the best generic solver (Pollard's $\rho$) requires $\mathcal{O}(\sqrt{n}) \approx 2^{128}$ operations, rendering brute-force enumeration physically impossible under current thermodynamic limits.</li>
+        <li><strong>Malleability of Basic EC-ElGamal:</strong> Basic EC-ElGamal is homomorphic and malleable ($C_2' = C_2 + M'$ decrypts to $M + M'$), failing IND-CCA2 security. Production architectures resolve this by adopting ECIES (combining ECDH ephemeral key exchange with authenticated ciphers like AES-GCM and HMAC).</li>
       </ul>
-
-      <h3>C. Intrinsic Vulnerabilities of Basic EC-ElGamal</h3>
-      <ul>
-        <li><strong>Malleability (Non-IND-CCA2):</strong> EC-ElGamal is linearly homomorphic. Given a ciphertext $(C_1, C_2) = (kG, M + kQ)$, an active attacker can forge the encryption of $M + M'$ as $(C_1, C_2 + M')$ without discovering $d$ or $k$. Modern systems resolve this using hybrid encryption: <strong>ECIES</strong> (combining ECDH with AES-GCM and HMAC).</li>
-        <li><strong>Point Embedding Overhead:</strong> Plaintext characters cannot be trivially represented as field integers; they must lie on the curve curve $y^2 \equiv x^3 + 7 \pmod p$, requiring probabilistic algorithms (such as Koblitz's method) which increase message expansion.</li>
-      </ul>
-    </div>
+    </section>
 
   </main>
 
   <script>
     // --- 1. CAESAR CIPHER LOGIC ---
-    function caesarShift(text, shift) {
-      shift = ((shift % 26) + 26) % 26;
-      let res = "";
-      for (let char of text.toUpperCase()) {
-        let code = char.charCodeAt(0);
+    function shiftText(text, k) {
+      k = ((k % 26) + 26) % 26;
+      let out = "";
+      for (let c of text.toUpperCase()) {
+        let code = c.charCodeAt(0);
         if (code >= 65 && code <= 90) {
-          res += String.fromCharCode(((code - 65 + shift) % 26) + 65);
+          out += String.fromCharCode(((code - 65 + k) % 26) + 65);
         } else {
-          res += char;
+          out += c;
         }
       }
-      return res;
+      return out;
     }
 
-    function runCaesarEncrypt() {
-      const pt = document.getElementById("caesar-plaintext").value;
-      const k = parseInt(document.getElementById("caesar-key").value) || 0;
-      const ct = caesarShift(pt, k);
-      document.getElementById("caesar-output").innerHTML = 
-        `<strong>Ciphertext (k = ${k}):</strong><br>${ct}`;
-      document.getElementById("crypto-input").value = ct;
+    function executeCaesar() {
+      const pt = document.getElementById("caesar-input").value;
+      const k = parseInt(document.getElementById("caesar-shift").value) || 0;
+      const ct = shiftText(pt, k);
+      document.getElementById("caesar-terminal").innerHTML = 
+        `<strong>Encryption Complete [k = ${k}]:</strong><br>${ct}`;
+      document.getElementById("attack-ciphertext").value = ct;
     }
 
-    // --- 2. CHI-SQUARE ATTACK LOGIC ---
-    const ENGLISH_FREQ = [
-      0.0817, 0.0149, 0.0278, 0.0425, 0.1270, 0.0223, 0.0202, // A-G
-      0.0609, 0.0697, 0.0015, 0.0077, 0.0403, 0.0241, 0.0675, // H-N
-      0.0751, 0.0193, 0.0010, 0.0599, 0.0633, 0.0906, 0.0276, // O-U
-      0.0098, 0.0236, 0.0015, 0.0197, 0.0007                   // V-Z
+    // --- 2. CHI-SQUARE ATTACK ---
+    const EN_FREQ = [
+      0.0817, 0.0149, 0.0278, 0.0425, 0.1270, 0.0223, 0.0202,
+      0.0609, 0.0697, 0.0015, 0.0077, 0.0403, 0.0241, 0.0675,
+      0.0751, 0.0193, 0.0010, 0.0599, 0.0633, 0.0906, 0.0276,
+      0.0098, 0.0236, 0.0015, 0.0197, 0.0007
     ];
 
-    function runChiSquareAttack() {
-      const ct = document.getElementById("crypto-input").value.toUpperCase();
-      let lettersOnly = ct.replace(/[^A-Z]/g, '');
-      let L = lettersOnly.length;
+    function executeChiSquareAttack() {
+      const ct = document.getElementById("attack-ciphertext").value.toUpperCase();
+      const letters = ct.replace(/[^A-Z]/g, '');
+      const L = letters.length;
+
       if (L === 0) {
-        document.getElementById("crypto-result").innerText = "Error: Input text contains no alphabetical characters.";
+        document.getElementById("attack-terminal").innerText = "Error: Ciphertext has no alphabetic characters.";
         return;
       }
 
       let bestK = 0;
       let minChi = Infinity;
-      let scores = [];
 
       for (let k = 0; k < 26; k++) {
         let counts = new Array(26).fill(0);
-        // Decrypt with shift -k
-        for (let char of lettersOnly) {
+        for (let char of letters) {
           let pIdx = ((char.charCodeAt(0) - 65 - k) % 26 + 26) % 26;
           counts[pIdx]++;
         }
 
-        let chi2 = 0;
+        let chi = 0;
         for (let i = 0; i < 26; i++) {
-          let expected = L * ENGLISH_FREQ[i];
-          chi2 += Math.pow(counts[i] - expected, 2) / expected;
+          let exp = L * EN_FREQ[i];
+          chi += Math.pow(counts[i] - exp, 2) / exp;
         }
 
-        scores.push({ k, chi2 });
-        if (chi2 < minChi) {
-          minChi = chi2;
+        if (chi < minChi) {
+          minChi = chi;
           bestK = k;
         }
       }
 
-      let recoveredPlain = caesarShift(ct, -bestK);
-      document.getElementById("crypto-result").innerHTML = 
-        `<strong>&chi;&sup2; Minimization Complete:</strong><br>` +
-        `&bull; Recovered Key (Shift k): <span class="badge-pill">${bestK}</span><br>` +
-        `&bull; Minimum &chi;&sup2; Value: <strong>${minChi.toFixed(2)}</strong> (Length: ${L} chars)<br>` +
-        `&bull; Recovered Plaintext:<br><em>${recoveredPlain}</em>`;
+      let recovered = shiftText(ct, -bestK);
+      document.getElementById("attack-terminal").innerHTML = 
+        `<strong>Cryptanalysis Result:</strong><br>` +
+        `&bull; Evaluated Length ($L$): ${L} alphabetic characters<br>` +
+        `&bull; Estimated Shift ($k$): <strong>${bestK}</strong> (min &chi;&sup2; = ${minChi.toFixed(2)})<br>` +
+        `&bull; Recovered Plaintext:<br><span style="color:#f8fafc;">${recovered}</span>`;
     }
 
-    // --- 3. TOY ECC (y^2 = x^3 + 7 mod 17) ---
+    // --- 3. TOY ECC ARITHMETIC (p = 17) ---
     const P = 17;
+    const G = { x: 1, y: 5 };
+    const M_SAMPLE = { x: 2, y: 7 }; // Point on y^2 = x^3 + 7 mod 17
 
     function mod(n, m) { return ((n % m) + m) % m; }
 
-    function modInverse(a, m) {
+    function modInv(a, m) {
       a = mod(a, m);
       for (let x = 1; x < m; x++) {
         if (mod(a * x, m) === 1) return x;
@@ -550,25 +550,23 @@
       return null;
     }
 
-    function pointAdd(P1, P2) {
+    function ptAdd(P1, P2) {
       if (!P1) return P2;
       if (!P2) return P1;
       let { x: x1, y: y1 } = P1;
       let { x: x2, y: y2 } = P2;
 
-      if (x1 === x2 && mod(y1 + y2, P) === 0) return null; // Point at infinity
+      if (x1 === x2 && mod(y1 + y2, P) === 0) return null;
 
       let m;
       if (x1 === x2 && y1 === y2) {
-        // Tangent doubling: (3x^2) / (2y)
         let num = mod(3 * x1 * x1, P);
-        let den = modInverse(2 * y1, P);
+        let den = modInv(2 * y1, P);
         if (den === null) return null;
         m = mod(num * den, P);
       } else {
-        // Chord addition: (y2 - y1) / (x2 - x1)
         let num = mod(y2 - y1, P);
-        let den = modInverse(x2 - x1, P);
+        let den = modInv(x2 - x1, P);
         if (den === null) return null;
         m = mod(num * den, P);
       }
@@ -578,78 +576,69 @@
       return { x: x3, y: y3 };
     }
 
-    function scalarMultiply(k, G) {
-      let result = null;
-      let current = G;
+    function ptMul(k, pt) {
+      let r = null;
+      let cur = pt;
       while (k > 0) {
-        if (k & 1) result = pointAdd(result, current);
-        current = pointAdd(current, current);
+        if (k & 1) r = ptAdd(r, cur);
+        cur = ptAdd(cur, cur);
         k >>= 1;
       }
-      return result;
+      return r;
     }
 
-    const G = { x: 1, y: 5 };
-    const M_toy = { x: 3, y: 1 }; // Sample message point on curve (3^3 + 7 = 34 = 0 mod 17; 1^2 = 1? wait: 3^3+7=34=0 -> y=0 is (3,0))
-    // Let's verify valid point: (1, 5) -> 5^2 = 25 = 8; 1^3+7 = 8. (1,5) is on curve!
-    // Another point: (2, 7) -> 7^2 = 49 = 15; 2^3+7 = 15. Valid!
-    const M_VALID = { x: 2, y: 7 };
-
-    function runEccDemo() {
+    function executeEccScheme() {
       let d = parseInt(document.getElementById("ecc-priv").value) || 3;
-      let k = parseInt(document.getElementById("ecc-k").value) || 5;
+      let k = parseInt(document.getElementById("ecc-nonce").value) || 5;
 
-      // 1. Recipient Public Key
-      let Q = scalarMultiply(d, G);
+      let Q = ptMul(d, G);
+      let C1 = ptMul(k, G);
+      let S_enc = ptMul(k, Q);
+      let C2 = ptAdd(M_SAMPLE, S_enc);
 
-      // 2. Encryption
-      let C1 = scalarMultiply(k, G);
-      let S_enc = scalarMultiply(k, Q); // Shared secret
-      let C2 = pointAdd(M_VALID, S_enc);
-
-      // 3. Decryption
-      let S_dec = scalarMultiply(d, C1); // d * (kG) = k * (dG)
+      let S_dec = ptMul(d, C1);
       let neg_S = { x: S_dec.x, y: mod(-S_dec.y, P) };
-      let recovered_M = pointAdd(C2, neg_S);
+      let dec_M = ptAdd(C2, neg_S);
 
-      document.getElementById("ecc-output").innerHTML = 
-        `<strong>Public Key:</strong> Q = ${d} &middot; G = (${Q.x}, ${Q.y})<br>` +
-        `<strong>Message Point (M):</strong> (${M_VALID.x}, ${M_VALID.y})<br>` +
-        `<strong>Ephemeral Secret (k):</strong> ${k} &implies; C1 = (${C1.x}, ${C1.y})<br>` +
-        `<strong>Ciphertext Pair:</strong> [C1 = (${C1.x}, ${C1.y}), C2 = (${C2.x}, ${C2.y})]<br>` +
-        `<strong>Decrypted Point:</strong> (${recovered_M.x}, ${recovered_M.y}) &check; Match: <strong>${recovered_M.x === M_VALID.x && recovered_M.y === M_VALID.y}</strong>`;
-      
-      document.getElementById("target-q").value = `(${Q.x}, ${Q.y})`;
+      document.getElementById("ecc-terminal").innerHTML = 
+        `<strong>Keys & Points Generated:</strong><br>` +
+        `&bull; Recipient Public Key: Q = ${d}&middot;G = (${Q.x}, ${Q.y})<br>` +
+        `&bull; Plaintext Point: M = (${M_SAMPLE.x}, ${M_SAMPLE.y})<br>` +
+        `&bull; Ephemeral Point: C1 = ${k}&middot;G = (${C1.x}, ${C1.y})<br>` +
+        `&bull; Ciphertext Point: C2 = M + k&middot;Q = (${C2.x}, ${C2.y})<br>` +
+        `&bull; Decrypted Point: M' = (${dec_M.x}, ${dec_M.y}) ` +
+        `[Match: <span style="color:#34d399;">${dec_M.x === M_SAMPLE.x && dec_M.y === M_SAMPLE.y}</span>]`;
+
+      document.getElementById("target-q-display").value = `(${Q.x}, ${Q.y})`;
     }
 
-    // --- 4. BOUNDED POINT ATTACK (DLOG) ---
-    function runDlogAttack() {
-      let d_secret = parseInt(document.getElementById("ecc-priv").value) || 3;
-      let Q = scalarMultiply(d_secret, G);
-      
-      let out = `Target Public Key Q = (${Q.x}, ${Q.y})<br>Initiating bounded point search in range [1, 17]...<br><br>`;
-      let found_d = null;
-      let current = null;
+    // --- 4. DLOG RECOVERY ATTACK ---
+    function executeDlogAttack() {
+      let d = parseInt(document.getElementById("ecc-priv").value) || 3;
+      let Q = ptMul(d, G);
+
+      let log = `Target Q = (${Q.x}, ${Q.y}). Testing bounded search space [1, 18]...<br>`;
+      let recovered = null;
 
       for (let j = 1; j <= 18; j++) {
-        current = scalarMultiply(j, G);
-        if (current && current.x === Q.x && current.y === Q.y) {
-          found_d = j;
-          out += `<span style="color:#4ade80;">&check; Step ${j}: ${j} &middot; G = (${current.x}, ${current.y}) &equiv; MATCH FOUND!</span><br>`;
+        let candidate = ptMul(j, G);
+        if (candidate && candidate.x === Q.x && candidate.y === Q.y) {
+          recovered = j;
+          log += `&bull; Step ${j}: Testing j=${j} &rarr; (${candidate.x}, ${candidate.y}) &equiv; <strong style="color:#34d399;">FOUND!</strong><br>`;
           break;
         } else {
-          let coord = current ? `(${current.x}, ${current.y})` : "Point at Infinity";
-          out += `&bull; Step ${j}: Testing j=${j} &rarr; ${coord}<br>`;
+          let coord = candidate ? `(${candidate.x}, ${candidate.y})` : "Point at Infinity";
+          log += `&bull; Step ${j}: Testing j=${j} &rarr; ${coord}<br>`;
         }
       }
 
-      out += `<br><strong>Discrete Logarithm Inverted!</strong> Recovered Private Key: <span class="badge-pill">d = ${found_d}</span>`;
-      document.getElementById("dlog-output").innerHTML = out;
+      log += `<br><strong>Discrete Logarithm Inverted:</strong> Recovered Secret Scalar: <strong style="color:var(--accent-pink);">d = ${recovered}</strong>`;
+      document.getElementById("dlog-terminal").innerHTML = log;
     }
 
-    // Initial triggers
-    runCaesarEncrypt();
-    runEccDemo();
+    // Init executions
+    executeCaesar();
+    executeEccScheme();
   </script>
 </body>
 </html>
